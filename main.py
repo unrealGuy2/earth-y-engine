@@ -8,9 +8,10 @@ initialize_ee()
 
 app = FastAPI(title="Earth-Y PINN Engine")
 
+# UPDATE THIS SECTION TO ALLOW TRAFFIC FROM ANYWHERE (Like your Vercel app)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"], # Changed from localhost to allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,28 +1,29 @@
 import ee
-import json
-import os
 from google.oauth2 import service_account
 
 def initialize_ee():
-    # 1. Cloud First: Check if we are running on DigitalOcean and have the Environment Variable
-    creds_string = os.environ.get('GOOGLE_CREDENTIALS')
+    # 1. Define the exact Earth Engine permission scope
+    SCOPES = ['https://www.googleapis.com/auth/earthengine']
     
-    if creds_string:
-        creds_data = json.loads(creds_string)
-        credentials = service_account.Credentials.from_service_account_info(creds_data)
-        ee.Initialize(credentials)
-    else:
-        # 2. Local Fallback: If on your laptop, use the file we hid from GitHub
-        print("Using local file for GEE Auth...")
-        with open('gee-credentials.json') as f:
-            creds_data = json.load(f)
-        credentials = service_account.Credentials.from_service_account_info(creds_data)
-        ee.Initialize(credentials)
+    print("Initializing Google Earth Engine...")
+    
+    # 2. Load the credentials directly from the JSON file (works on Laptop & Render)
+    credentials = service_account.Credentials.from_service_account_file(
+        'gee-credentials.json', scopes=SCOPES
+    )
+    
+    # 3. Initialize Earth Engine using these specific credentials
+    ee.Initialize(credentials)
+    print("Earth Engine Initialized Successfully!")
 
 def get_coastal_data(lat: float, lng: float):
+    # Create the geometry point from the coordinates
     point = ee.Geometry.Point([lng, lat])
+    
+    # Load the SRTM Digital Elevation Model
     dem = ee.Image('USGS/SRTMGL1_003')
     
+    # Sample the elevation at that exact point
     sampled = dem.sample(point, 30)
     size = sampled.size().getInfo()
     
@@ -31,6 +32,7 @@ def get_coastal_data(lat: float, lng: float):
     else:
         elevation = 0.0
         
+    # Risk calculation logic
     risk = "Critical" if elevation < 5 else "Elevated" if elevation < 15 else "Low"
     confidence = "94%" if elevation < 5 else "89%"
     

@@ -22,7 +22,7 @@ class LocationQuery(BaseModel):
     lng: float
     city: str
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"]) # This line is the magic fix
 def read_root():
     return {"status": "Earth-Y Engine is Online"}
 

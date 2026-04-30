@@ -8,10 +8,10 @@ initialize_ee()
 
 app = FastAPI(title="Earth-Y PINN Engine")
 
-# UPDATE THIS SECTION TO ALLOW TRAFFIC FROM ANYWHERE (Like your Vercel app)
+# ALLOW TRAFFIC FROM ANYWHERE (Like your Vercel app)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Changed from localhost to allow all origins
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,12 +22,13 @@ class LocationQuery(BaseModel):
     lng: float
     city: str
 
-@app.api_route("/", methods=["GET", "HEAD"]) # This line is the magic fix
+@app.api_route("/", methods=["GET", "HEAD"]) # UptimeRobot Magic Fix
 def read_root():
     return {"status": "Earth-Y Engine is Online"}
 
 @app.post("/api/predict")
 def run_pinn_model(query: LocationQuery):
+    # Fetch multi-variable satellite data
     gee_data = get_coastal_data(query.lat, query.lng)
     elevation = gee_data['elevation']
     
@@ -36,8 +37,6 @@ def run_pinn_model(query: LocationQuery):
     risk = "Critical" if predicted_loss > 10 else "Elevated" if predicted_loss > 5 else "Low"
     confidence = "88%" if predicted_loss > 10 else "94%"
     
-    
-    # Dynamically scale the implications based on the risk level
     # --- ENTERPRISE REPORTING LOGIC ---
     if risk == "Critical":
         implications = [
@@ -59,14 +58,21 @@ def run_pinn_model(query: LocationQuery):
             "Standard 10-year maintenance cycles apply; minimal flood ingress risk"
         ]
         trend = "Shoreline remains geologically stable within standard variance."
+        
     return {
         "city": query.city,
         "landLoss": f"{predicted_loss}m", 
         "risk": risk,
         "confidence": confidence,
         "year": 2035,
+        "geologyMetrics": {
+            "elevation": f"{gee_data['elevation']}m",
+            "slopeGradient": f"{gee_data['slope_degrees']}°",
+            "floodingVulnerability": gee_data['floodRisk'],
+            "erosionSusceptibility": gee_data['erosionRisk']
+        },
         "basisOfPrediction": {
-            "satelliteDataRange": "Sentinel-2 Telemetry (2018–2024)",
+            "satelliteDataRange": "Sentinel-2 Telemetry & SRTM DEM",
             "observedTrend": trend,
             "modelType": "Physics-Informed Neural Network (PINN) constrained by fluid dynamics"
         },

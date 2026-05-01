@@ -25,7 +25,7 @@ def get_coastal_data(lat: float, lng: float):
         slope_val = 0.0
         
     flood_risk = "Severe (Inundation Likely)" if elevation < 3 else "Moderate (Storm Surge Vulnerable)" if elevation < 8 else "Low (Topographically Shielded)"
-    erosion_risk = "High (Scarping/Undercutting)" if slope_val > 10 else "Moderate (Surface Wash)" if slope_val > 3 else "Low (Stable Gradient)"
+    erosion_risk = "High (Scarping/Undercutting)" if slope_val > 10 else "Moderate (surface erosion processes)" if slope_val > 3 else "Low (Stable Gradient)"
     risk = "Critical" if elevation < 5 else "Elevated" if elevation < 15 else "Low"
     
     return {
